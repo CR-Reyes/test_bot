@@ -10,7 +10,7 @@ firebase init
 ```
 2. Clonar el repositorio
 ```bash
-git clone <URL_DEL_REPO>
+git clone https://github.com/Chatbots-Inc/ChatbotSI-Beta.git
 ```
 3. Activar firebase y vincularlo al proyecto en el que está trabajando
 ```bash
