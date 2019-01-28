@@ -45,6 +45,8 @@ const conceptSuggestions = [
     'Alpinista'
 ];
 
+const err_catch = "Lo siento, no te puedo ayudar con eso :C"
+
 // this belongs to the database
 const list_of_available_actions = db.ref('props/list_of_available_actions/');
 const list_of_concepts = db.ref('props/list_of_concepts/');
@@ -55,11 +57,11 @@ const concepts = db.ref('contenido/conceptos/');
 
 // INTENT: just say hi and show intent suggestions
 app.intent('Default Welcome Intent', (conv) => {
-    conv.ask(new SimpleResponse({
+    conv.tell(new SimpleResponse({
         speech: '¡Hola!',
         text: '¡Hola! Soy el chatbot de sistemas inteligentes, hazme alguna pregunta o simplemente pregúntame qué puedo hacer'
     }));
-    conv.ask(new Suggestions(['¿Qué puedes hacer?']));
+    conv.tell(new Suggestions(['¿Qué puedes hacer?']));
 });
 
 // INTENT: directly delivers the algorithm of a concept
@@ -77,11 +79,11 @@ app.intent('action_algorithm_direct', (conv, params) => {
             let concept_lwr = concept.toLowerCase();
             if (algorithm) {
                 response = algorithm;
-                conv.ask(`Este es el algoritmo de ${concept_lwr}:`);
+                conv.tell(`Este es el algoritmo de ${concept_lwr}:`);
             } else {
-                conv.ask(`Lo siento, no conozco el algoritmo de ${concept_lwr}`);
+                conv.tell(`Lo siento, no conozco el algoritmo de ${concept_lwr}`);
             }
-            conv.ask(new BasicCard({
+            conv.tell(new BasicCard({
                 text: response,
                 title: concept,
                 image: new Image({
@@ -89,14 +91,14 @@ app.intent('action_algorithm_direct', (conv, params) => {
                     alt: 'Imagen del algoritmo'
                 })
             }));
-            return conv.ask(new Suggestions(actionSuggestions));
+            return conv.tell(new Suggestions(actionSuggestions));
         } else {
-            conv.ask('Lo siento, no conozco ese algoritmo, pero te puedo sugerir algunos que sí...');
-            return conv.ask(new Suggestions(conceptSuggestions));
+            conv.tell('Lo siento, no conozco ese algoritmo, pero te puedo sugerir algunos que sí...');
+            return conv.tell(new Suggestions(conceptSuggestions));
         }
     }).catch(err => {
         console.error(err);
-        return conv.close('Sorry, problems with this intent');
+        return conv.close(err_catch);
     });
 });
 
@@ -115,11 +117,11 @@ app.intent('action_definition_direct', (conv, params) => {
             let concept_lwr = concept.toLowerCase();
             if (definition) {
                 response = definition;
-                conv.ask(`Esta es la definición de ${concept_lwr}:`);
+                conv.tell(`Esta es la definición de ${concept_lwr}:`);
             } else {
-                conv.ask(`Lo siento, no conozco la definición de ${concept_lwr}`);
+                conv.tell(`Lo siento, no conozco la definición de ${concept_lwr}`);
             }
-            conv.ask(new BasicCard({
+            conv.tell(new BasicCard({
                 text: response,
                 title: concept,
                 image: new Image({
@@ -127,14 +129,14 @@ app.intent('action_definition_direct', (conv, params) => {
                     alt: 'Imagen del concepto'
                 })
             }));
-            return conv.ask(new Suggestions(actionSuggestions));
+            return conv.tell(new Suggestions(actionSuggestions));
         } else {
-            conv.ask('Lo siento, no conozco esa definición, pero te puedo sugerir algunas que sí...');
-            return conv.ask(new Suggestions(conceptSuggestions));
+            conv.tell('Lo siento, no conozco esa definición, pero te puedo sugerir algunas que sí...');
+            return conv.tell(new Suggestions(conceptSuggestions));
         }
     }).catch(err => {
         console.error(err);
-        return conv.close('Sorry, problems with this intent');
+        return conv.close(err_catch);
     });
 });
 
@@ -167,15 +169,15 @@ app.intent('action_tutorial_direct', (conv, params) => {
         conv.followup('EVENT_DFS');
         break;
     default:
-        conv.ask('Lo siento, no tengo el tutorial de ese concepto, pero te puedo sugerir algunos que sí...');
-        conv.ask(new Suggestions(conceptSuggestions));
+        conv.tell('Lo siento, no tengo el tutorial de ese concepto, pero te puedo sugerir algunos que sí...');
+        conv.tell(new Suggestions(conceptSuggestions));
   }
 });
 
 // INTENT: display a list of available actions
 app.intent('actions_available', (conv) => {
   let response = 'Esta es una lista de las acciones que puedo realizar.';
-  conv.ask(new SimpleResponse({
+  conv.tell(new SimpleResponse({
       speech: response,
       text: response
   }));
@@ -183,10 +185,10 @@ app.intent('actions_available', (conv) => {
   return list_of_available_actions.once('value')
       .then(result => {
           // create new list with the result promise object
-          return conv.ask(new List(result.val()));
+          return conv.tell(new List(result.val()));
       }).catch(err => {
           console.error(err);
-          return conv.close('Sorry, problems');
+          return conv.close(err_catch);
       });
 });
 
@@ -214,7 +216,7 @@ app.intent('option_handler', (conv, params, option) => {
     let ACTION = conv.contexts.get('action_context')['parameters']['action'];
     conv.followup('EVENT_' + ACTION);
   }
-  conv.ask(new SimpleResponse({
+  conv.tell(new SimpleResponse({
       speech: response,
       text: response
   }));
@@ -231,7 +233,7 @@ app.intent('new_definition', (conv) => {
   }
   // simple response
   let response = 'Esta es una lista de términos que puedo definir.';
-  conv.ask(new SimpleResponse({
+  conv.tell(new SimpleResponse({
       speech: response,
       text: response
   }));
@@ -239,10 +241,10 @@ app.intent('new_definition', (conv) => {
   return list_of_concepts.once('value')
       .then(result => {
           // create new list with the result promise object
-          return conv.ask(new List(result.val()));
+          return conv.tell(new List(result.val()));
       }).catch(err => {
           console.error(err);
-          return conv.close('Sorry, problems');
+          return conv.close(err_catch);
       });
 });
 
@@ -264,11 +266,11 @@ app.intent('new_definition - get_concept', (conv, params) => {
             let concept_lwr = concept.toLowerCase();
             if (definition) {
                 response = definition;
-                conv.ask(`Esta es la definición de ${concept_lwr}:`);
+                conv.tell(`Esta es la definición de ${concept_lwr}:`);
             } else {
-                conv.ask(`Lo siento, no conozco la definición de ${concept_lwr}`);
+                conv.tell(`Lo siento, no conozco la definición de ${concept_lwr}`);
             }
-            conv.ask(new BasicCard({
+            conv.tell(new BasicCard({
                 text: response,
                 title: concept,
                 image: new Image({
@@ -276,14 +278,14 @@ app.intent('new_definition - get_concept', (conv, params) => {
                     alt: 'Imagen del concepto'
                 })
             }));
-            return conv.ask(new Suggestions(actionSuggestions));
+            return conv.tell(new Suggestions(actionSuggestions));
         } else {
-            conv.ask('Lo siento, no conozco esa definición, pero te puedo sugerir algunas que sí...');
-            return conv.ask(new Suggestions(conceptSuggestions));
+            conv.tell('Lo siento, no conozco esa definición, pero te puedo sugerir algunas que sí...');
+            return conv.tell(new Suggestions(conceptSuggestions));
         }
     }).catch(err => {
         console.error(err);
-        return conv.close('Sorry, problems with this intent');
+        return conv.close(err_catch);
     });
 });
 
@@ -299,7 +301,7 @@ app.intent('new_tutorial', (conv) => {
     }
     // simple response
     let response = 'Estos son los tutoriales disponibles.';
-    conv.ask(new SimpleResponse({
+    conv.tell(new SimpleResponse({
         speech: response,
         text: response
     }));
@@ -307,10 +309,10 @@ app.intent('new_tutorial', (conv) => {
     return list_of_concepts.once('value')
         .then(result => {
             // create new list with the result promise object
-            return conv.ask(new List(result.val()));
+            return conv.tell(new List(result.val()));
         }).catch(err => {
             console.error(err);
-            return conv.close('Sorry, problems');
+            return conv.close(err_catch);
         });
 });
 
@@ -345,8 +347,8 @@ app.intent('new_tutorial - get_concept', (conv, params) => {
             conv.followup('EVENT_DFS');
             break;
         default:
-            conv.ask('Lo siento, no tengo el tutorial de ese concepto, pero te puedo sugerir algunos que sí...');
-            conv.ask(new Suggestions(conceptSuggestions));
+            conv.tell('Lo siento, no tengo el tutorial de ese concepto, pero te puedo sugerir algunos que sí...');
+            conv.tell(new Suggestions(conceptSuggestions));
     }
 });
 
@@ -362,7 +364,7 @@ app.intent('new_video', (conv) => {
     }
     // simple response
     let response = 'Esta es una lista de los términos que tienen un video.';
-    conv.ask(new SimpleResponse({
+    conv.tell(new SimpleResponse({
         speech: response,
         text: response
     }));
@@ -370,10 +372,10 @@ app.intent('new_video', (conv) => {
     return list_of_concepts.once('value')
         .then(result => {
             // create new list with the result promise object
-            return conv.ask(new List(result.val()));
+            return conv.tell(new List(result.val()));
         }).catch(err => {
             console.error(err);
-            return conv.close('Sorry, problems');
+            return conv.close(err_catch);
         });
 });
 
@@ -395,11 +397,11 @@ app.intent('new_video - get_concept', (conv, params) => {
             let concept_lwr = concept.toLowerCase();
             if (video) {
                 response = video;
-                conv.ask(`Este es el video de ${concept_lwr}:`);
+                conv.tell(`Este es el video de ${concept_lwr}:`);
             } else {
-                conv.ask(`Lo siento, no tengo el video de ${concept_lwr}`);
+                conv.tell(`Lo siento, no tengo el video de ${concept_lwr}`);
             }
-            conv.ask(new BasicCard({
+            conv.tell(new BasicCard({
                 title: concept,
                 buttons: new Button({
                     title: 'Ver en Youtube',
@@ -410,14 +412,14 @@ app.intent('new_video - get_concept', (conv, params) => {
                     alt: 'Imagen del concepto'
                 })
             }));
-            return conv.ask(new Suggestions(actionSuggestions));
+            return conv.tell(new Suggestions(actionSuggestions));
         } else {
-            conv.ask('Lo siento, no tengo ese video, pero te puedo sugerir algunos que sí...');
-            return conv.ask(new Suggestions(conceptSuggestions));
+            conv.tell('Lo siento, no tengo ese video, pero te puedo sugerir algunos que sí...');
+            return conv.tell(new Suggestions(conceptSuggestions));
         }
     }).catch(err => {
         console.error(err);
-        return conv.close('Sorry, problems with this intent');
+        return conv.close(err_catch);
     });
 });
 
@@ -433,7 +435,7 @@ app.intent('new_algorithm', (conv) => {
     }
     // simple response
     let response = 'Esta es una lista de los algoritmos que puedo mostrarte.';
-    conv.ask(new SimpleResponse({
+    conv.tell(new SimpleResponse({
         speech: response,
         text: response
     }));
@@ -441,10 +443,10 @@ app.intent('new_algorithm', (conv) => {
     return list_of_concepts.once('value')
         .then(result => {
             // create new list with the result promise object
-            return conv.ask(new List(result.val()));
+            return conv.tell(new List(result.val()));
         }).catch(err => {
             console.error(err);
-            return conv.close('Sorry, problems');
+            return conv.close(err_catch);
         });
 });
 
@@ -467,11 +469,11 @@ app.intent('new_algorithm - get_concept', (conv, params) => {
             let concept_lwr = concept.toLowerCase();
             if (algorithm) {
                 response = algorithm;
-                conv.ask(`Este es el algoritmo de ${concept_lwr}:`);
+                conv.tell(`Este es el algoritmo de ${concept_lwr}:`);
             } else {
-                conv.ask(`Lo siento, no conozco el algoritmo de ${concept_lwr}`);
+                conv.tell(`Lo siento, no conozco el algoritmo de ${concept_lwr}`);
             }
-            conv.ask(new BasicCard({
+            conv.tell(new BasicCard({
                 text: response,
                 title: concept,
                 image: new Image({
@@ -479,14 +481,14 @@ app.intent('new_algorithm - get_concept', (conv, params) => {
                     alt: 'Imagen del algoritmo'
                 })
             }));
-            return conv.ask(new Suggestions(actionSuggestions));
+            return conv.tell(new Suggestions(actionSuggestions));
         } else {
-            conv.ask('Lo siento no, conozco ese algoritmo, pero te puedo sugerir algunos que sí...');
-            return conv.ask(new Suggestions(conceptSuggestions));
+            conv.tell('Lo siento no, conozco ese algoritmo, pero te puedo sugerir algunos que sí...');
+            return conv.tell(new Suggestions(conceptSuggestions));
         }
     }).catch(err => {
         console.error(err);
-        return conv.close('Sorry, problems with this intent');
+        return conv.close(err_catch);
     });
 });
 
