@@ -49,8 +49,8 @@ const err_catch = "Lo siento, no te puedo ayudar con eso :C";
 const def_lifespan = 2;
 
 // this belongs to the database
-const db_available_actions = db.ref('props/db_available_actions/');
-const db_concepts_list = db.ref('props/db_concepts_list/');
+const db_available_actions = db.ref('props/list_of_available_actions/');
+const db_concepts_list = db.ref('props/list_of_concepts/');
 const db_concepts_content = db.ref('contenido/conceptos/');
 
 
@@ -469,7 +469,7 @@ app.intent('new_algorithm - get_concept', (conv, params) => {
     return db_concepts_content.once('value')
     .then(result => {
         if (concept) {
-            let algorithm = result.val()[concept]['algoritmo'];
+            let algorithm = result.val()[concept]['descripcion_algoritmo'];
             let concept_lwr = concept.toLowerCase();
             if (algorithm) {
                 response = algorithm;
@@ -481,7 +481,7 @@ app.intent('new_algorithm - get_concept', (conv, params) => {
                 text: response,
                 title: concept,
                 image: new Image({
-                    url: result.val()[concept]['imagen'],
+                    url: result.val()[concept]['algoritmo'],
                     alt: 'Imagen del algoritmo'
                 })
             }));
