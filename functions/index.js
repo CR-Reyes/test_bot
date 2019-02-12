@@ -45,12 +45,13 @@ const conceptSuggestions = [
     'Alpinista'
 ];
 
-const err_catch = "Lo siento, no te puedo ayudar con eso :C"
+const err_catch = "Lo siento, no te puedo ayudar con eso :C";
+const def_lifespan = 2;
 
 // this belongs to the database
-const list_of_available_actions = db.ref('props/list_of_available_actions/');
-const list_of_concepts = db.ref('props/list_of_concepts/');
-const concepts = db.ref('contenido/conceptos/');
+const db_available_actions = db.ref('props/db_available_actions/');
+const db_concepts_list = db.ref('props/db_concepts_list/');
+const db_concepts_content = db.ref('contenido/conceptos/');
 
 
 //////////////////////// INTENTS ////////////////////////////////////////////
@@ -67,15 +68,15 @@ app.intent('Default Welcome Intent', (conv) => {
 // INTENT: directly delivers the algorithm of a concept
 app.intent('action_algorithm_direct', (conv, params) => {
   // set action context
-  conv.contexts.set('action_context', 5, {'action': 'CONCEPT_ALGORITHM'});
+  conv.contexts.set('action_context', def_lifespan, {'action': 'CONCEPT_ALGORITHM'});
   let response = '';
   let concept = params.concepts;
   // set concept context
-  conv.contexts.set('concept_context', 5, {'concept': concept});
-  return concepts.once('value')
+  conv.contexts.set('concept_context', def_lifespan, {'concept': concept});
+  return db_concepts_content.once('value')
     .then(result => {
         if (concept) {
-            let algorithm = result.val()[concept]['algoritmo'];
+            let algorithm = result.val()[concept]['descripcion_algoritmo'];
             let concept_lwr = concept.toLowerCase();
             if (algorithm) {
                 response = algorithm;
@@ -87,7 +88,7 @@ app.intent('action_algorithm_direct', (conv, params) => {
                 text: response,
                 title: concept,
                 image: new Image({
-                    url: result.val()[concept]['imagen'],
+                    url: result.val()[concept]['algoritmo'],
                     alt: 'Imagen del algoritmo'
                 })
             }));
@@ -105,12 +106,12 @@ app.intent('action_algorithm_direct', (conv, params) => {
 // INTENT: directly delivers the definition of a concept
 app.intent('action_definition_direct', (conv, params) => {
   // set action context
-  conv.contexts.set('action_context', 5, {'action': 'CONCEPT_DEFINITION'});
+  conv.contexts.set('action_context', def_lifespan, {'action': 'CONCEPT_DEFINITION'});
   let response = '';
   let concept = params.concepts;
   // set concept context
-  conv.contexts.set('concept_context', 5, {'concept': concept});
-  return concepts.once('value')
+  conv.contexts.set('concept_context', def_lifespan, {'concept': concept});
+  return db_concepts_content.once('value')
     .then(result => {
         if (concept) {
             let definition = result.val()[concept]['definicion'];
@@ -143,11 +144,11 @@ app.intent('action_definition_direct', (conv, params) => {
 // INTENT: directly starts the tutorial of a concept also mentioned by user
 app.intent('action_tutorial_direct', (conv, params) => {
   // set action context
-  conv.contexts.set('action_context', 5, {'action': 'CONCEPT_TUTORIAL'});
+  conv.contexts.set('action_context', def_lifespan, {'action': 'CONCEPT_TUTORIAL'});
   let response = '';
   let concept = params.concepts;
   // set concept context
-  conv.contexts.set('concept_context', 5, {'concept': concept});
+  conv.contexts.set('concept_context', def_lifespan, {'concept': concept});
   // go fetch its tutorial
   switch (concept) {
     case 'Busqueda A*':
@@ -174,6 +175,9 @@ app.intent('action_tutorial_direct', (conv, params) => {
   }
 });
 
+// INTENT: direct video
+///////here
+
 // INTENT: display a list of available actions
 app.intent('actions_available', (conv) => {
   let response = 'Esta es una lista de las acciones que puedo realizar.';
@@ -182,7 +186,7 @@ app.intent('actions_available', (conv) => {
       text: response
   }));
   // Read list format from reference to the database
-  return list_of_available_actions.once('value')
+  return db_available_actions.once('value')
       .then(result => {
           // create new list with the result promise object
           return conv.ask(new List(result.val()));
@@ -196,7 +200,7 @@ app.intent('actions_available', (conv) => {
 app.intent('option_handler', (conv, params, option) => {
   // Get the user's selection
   // Compare the user's selections to each of the item's keys
-  let response = 'No seleccionaste ninguna opción';
+  let response;
   if (!option) {
     response = 'No seleccionaste ninguna opción';
   } else if (option === 'DEFINITION') {
@@ -212,7 +216,7 @@ app.intent('option_handler', (conv, params, option) => {
   } else {
   // I am assuming the option selected was a concept
     response = 'No se identificó el concepto o la acción.';
-    conv.contexts.set('concept_context', 5, {'concept': option});
+    conv.contexts.set('concept_context', def_lifespan, {'concept': option});
     let ACTION = conv.contexts.get('action_context')['parameters']['action'];
     conv.followup('EVENT_' + ACTION);
   }
@@ -225,7 +229,7 @@ app.intent('option_handler', (conv, params, option) => {
 // INTENT: display a list 5 sample terms that have definition
 app.intent('new_definition', (conv) => {
   // set action context
-  conv.contexts.set('action_context', 5, {'action': 'CONCEPT_DEFINITION'});
+  conv.contexts.set('action_context', def_lifespan, {'action': 'CONCEPT_DEFINITION'});
   // if there already existed a concept as a context variable
   if (conv.contexts.get('concept_context')) {
         concept = conv.contexts.get('concept_context')['parameters']['concept'];
@@ -238,7 +242,7 @@ app.intent('new_definition', (conv) => {
       text: response
   }));
   // Read list format from reference to the database
-  return list_of_concepts.once('value')
+  return db_concepts_list.once('value')
       .then(result => {
           // create new list with the result promise object
           return conv.ask(new List(result.val()));
@@ -259,7 +263,7 @@ app.intent('new_definition - get_concept', (conv, params) => {
         conv.contexts.set('concept_context', 5, {'concept': concept});
     }
     // go fetch its definition
-    return concepts.once('value')
+    return db_concepts_content.once('value')
     .then(result => {
         if (concept) {
             let definition = result.val()[concept]['definicion'];
@@ -306,7 +310,7 @@ app.intent('new_tutorial', (conv) => {
         text: response
     }));
     // Read list format from reference to the database
-    return list_of_concepts.once('value')
+    return db_concepts_list.once('value')
         .then(result => {
             // create new list with the result promise object
             return conv.ask(new List(result.val()));
@@ -369,7 +373,7 @@ app.intent('new_video', (conv) => {
         text: response
     }));
     // Read list format from reference to the database
-    return list_of_concepts.once('value')
+    return db_concepts_list.once('value')
         .then(result => {
             // create new list with the result promise object
             return conv.ask(new List(result.val()));
@@ -390,7 +394,7 @@ app.intent('new_video - get_concept', (conv, params) => {
         conv.contexts.set('concept_context', 5, {'concept': concept});
     }
     // go fetch its video
-    return concepts.once('value')
+    return db_concepts_content.once('value')
       .then(result => {
         if (concept) {
             let video = result.val()[concept]['video'];
@@ -440,7 +444,7 @@ app.intent('new_algorithm', (conv) => {
         text: response
     }));
     // Read list format from reference to the database
-    return list_of_concepts.once('value')
+    return db_concepts_list.once('value')
         .then(result => {
             // create new list with the result promise object
             return conv.ask(new List(result.val()));
@@ -462,7 +466,7 @@ app.intent('new_algorithm - get_concept', (conv, params) => {
         conv.contexts.set('concept_context', 5, {'concept': concept});
     }
     // go fetch its definition
-    return concepts.once('value')
+    return db_concepts_content.once('value')
     .then(result => {
         if (concept) {
             let algorithm = result.val()[concept]['algoritmo'];
