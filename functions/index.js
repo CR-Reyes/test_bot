@@ -59,7 +59,7 @@ app.intent('Default Welcome Intent', (conv) => {
         speech: '¡Hola!',
         text: '¡Hola! Soy el chatbot de sistemas inteligentes, hazme alguna pregunta o simplemente pregúntame qué puedo hacer'
     }));
-    conv.ask(new Suggestions(['¿Qué puedes hacer?']));
+    conv.ask(new Suggestions(['¿Qué puedes hacer?', 'Qué es BFS?', 'Algoritmo a estrella']));
 });
 
 // INTENT: directly delivers the algorithm of a concept
@@ -73,7 +73,7 @@ app.intent('action_algorithm_direct', (conv, params) => {
   return concepts.once('value')
     .then(result => {
         if (concept) {
-            let algorithm = result.val()[concept]['algoritmo'];
+            let algorithm = result.val()[concept]['descripcion_algoritmo'];
             let concept_lwr = concept.toLowerCase();
             if (algorithm) {
                 response = algorithm;
@@ -85,7 +85,7 @@ app.intent('action_algorithm_direct', (conv, params) => {
                 text: response,
                 title: concept,
                 image: new Image({
-                    url: result.val()[concept]['imagen'],
+                    url: result.val()[concept]['algoritmo'],
                     alt: 'Imagen del algoritmo'
                 })
             }));
@@ -463,7 +463,7 @@ app.intent('new_algorithm - get_concept', (conv, params) => {
     return concepts.once('value')
     .then(result => {
         if (concept) {
-            let algorithm = result.val()[concept]['algoritmo'];
+            let algorithm = result.val()[concept]['descripcion_algoritmo'];
             let concept_lwr = concept.toLowerCase();
             if (algorithm) {
                 response = algorithm;
@@ -475,7 +475,7 @@ app.intent('new_algorithm - get_concept', (conv, params) => {
                 text: response,
                 title: concept,
                 image: new Image({
-                    url: result.val()[concept]['imagen'],
+                    url: result.val()[concept]['algoritmo'],
                     alt: 'Imagen del algoritmo'
                 })
             }));
